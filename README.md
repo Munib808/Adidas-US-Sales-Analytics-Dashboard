@@ -32,43 +32,7 @@ Adidas-US-Sales-Dashboard/
 
 The dataset contains Adidas sales transactions in the United States with the following key attributes:
 
-Retail Information
-
-retailer
-
-region
-
-state
-
-city
-
-Product & Sales Channel
-
-product
-
-sales_method (In-store / Online / Outlet)
-
-Sales Metrics
-
-price_per_unit
-
-units_sold
-
-total_sales
-
-operating_profit
-
-operating_margin
-
-Time Attributes
-
-invoice_date
-
-year
-
-month
-
-month_name
+"Retailer"	,"Retailer ID"	,"Invoice Date"	,"Region"	,"State"	,"City"	,"Product",	"Price per Unit"	,"Units Sold",	"Total Sales"	,"Operating Profit"	,"Operating Margin"	,"Sales Method"
 
 ## Dashboard Features
 ### 1. Dataset Overview
