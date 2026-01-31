@@ -101,7 +101,7 @@ City
 
 All charts and KPIs update dynamically based on selected filters.
 
-Technologies Used
+## Technologies Used
 
 Python
 
@@ -133,7 +133,7 @@ Retailer and product profitability analysis
 
 Business-driven decision support through visual analytics
 
-Use Cases
+## Use Cases
 
 Data Analytics Portfolio Project
 
@@ -145,7 +145,7 @@ Academic or Industrial Case Study
 
 Interview-ready Streamlit Dashboard
 
-Future Enhancements
+## Future Enhancements
 
 Year-over-Year growth analysis
 
@@ -157,7 +157,7 @@ KPI trend indicators
 
 Deployment on Streamlit Cloud
 
-Author
+## Author
 
 ## Munib Ahmad
 Data Science | Machine Learning | Business Analytics
