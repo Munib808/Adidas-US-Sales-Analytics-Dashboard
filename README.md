@@ -20,13 +20,13 @@ Build a clean, professional, and scalable Streamlit dashboard
 
 ## Project Structure
 Adidas-US-Sales-Dashboard/
-│
-├── Adidas US Sales Datasets.xlsx     # Raw dataset
-├── adidas_cleaned.xls                # Cleaned and processed dataset
-├── PreProcessing_Data.ipynb          # Data cleaning & preprocessing notebook
-├── app.py                            # Streamlit dashboard application
-├── logo.png                          # Dashboard logo
-└── README.md                         # Project documentation
+- │
+- ├── Adidas US Sales Datasets.xlsx     # Raw dataset
+- ├── adidas_cleaned.xls                # Cleaned and processed dataset
+- ├── PreProcessing_Data.ipynb          # Data cleaning & preprocessing notebook
+- ├── app.py                            # Streamlit dashboard application
+- ├── logo.png                          # Dashboard logo
+- └── README.md                         # Project documentation
 
 ## Dataset Description
 
