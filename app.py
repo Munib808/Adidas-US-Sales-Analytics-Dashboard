@@ -1,42 +1,33 @@
+### Importing required modules
 import streamlit as st
-import streamlit.components.v1 as components
-import numpy as np
-import joblib
-import time
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from PIL import Image
 
 # ===============================
-# PAGE CONFIG
+# PAGE CONFIG (must be first)
 # ===============================
 st.set_page_config(
-    page_title="Diabetes Risk Analyzer | AI Clinical Lab",
-    page_icon="🩸",
+    page_title="Adidas US Sales Dashboard",
+    page_icon="👟",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # ===============================
-# LOAD MODEL
-# ===============================
-@st.cache_resource
-def load_model():
-    return joblib.load("model_ab.pkl")
-
-model = load_model()
-
-# ===============================
-# CUSTOM CSS — CLINICAL FUTURISTIC THEME
+# CUSTOM CSS — DARK ATHLETIC THEME
 # ===============================
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ─── GLOBAL ─── */
 .stApp {
-    background: #080A12;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #07080D;
+    font-family: 'Outfit', sans-serif;
 }
-#MainMenu, footer, header, .stDeployButton { visibility: hidden; }
-.block-container { padding-top: 1rem; max-width: 1100px; }
+#MainMenu, footer, header { visibility: hidden; }
 
 /* ─── ANIMATED BG ─── */
 .stApp > div:first-child::before {
@@ -44,167 +35,170 @@ st.markdown("""
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background:
-        radial-gradient(ellipse 70% 50% at 15% 15%, rgba(56, 189, 248, 0.05) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 70% at 85% 85%, rgba(168, 85, 247, 0.04) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 50% 50%, rgba(251, 113, 133, 0.03) 0%, transparent 50%);
+        radial-gradient(ellipse 60% 50% at 5% 10%, rgba(0, 0, 0, 0.3) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 60% at 95% 90%, rgba(255, 255, 255, 0.015) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
-    animation: bgBreath 15s ease-in-out infinite alternate;
-}
-@keyframes bgBreath {
-    0% { opacity: 0.5; }
-    100% { opacity: 1; }
 }
 
-/* ─── NOISE ─── */
-.stApp > div:first-child::after {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    opacity: 0.02;
-    pointer-events: none;
-    z-index: 1;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+/* ─── SIDEBAR ─── */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0C0D14 0%, #0F1018 100%) !important;
+    border-right: 1px solid rgba(255,255,255,0.04) !important;
+}
+[data-testid="stSidebar"] .stMarkdown h1,
+[data-testid="stSidebar"] .stMarkdown h2,
+[data-testid="stSidebar"] .stMarkdown h3 {
+    color: #E2E8F0 !important;
+    font-family: 'Outfit', sans-serif !important;
+}
+[data-testid="stSidebar"] .stMarkdown p,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] span {
+    color: #94A3B8 !important;
+    font-family: 'Outfit', sans-serif !important;
+}
+/* Sidebar title override */
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1 {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+    color: #F8FAFC !important;
+    padding-bottom: 0.75rem !important;
+    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+    margin-bottom: 1rem !important;
+}
+/* Sidebar radio */
+[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label {
+    color: #CBD5E1 !important;
+    background: rgba(255,255,255,0.02) !important;
+    border: 1px solid rgba(255,255,255,0.05) !important;
+    border-radius: 10px !important;
+    padding: 0.5rem 0.85rem !important;
+    margin-bottom: 4px !important;
+    transition: all 0.3s ease !important;
+    font-size: 13px !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label:hover {
+    border-color: rgba(255,255,255,0.12) !important;
+    background: rgba(255,255,255,0.04) !important;
+}
+/* Sidebar multiselect */
+[data-testid="stSidebar"] .stMultiSelect [data-baseweb="select"] {
+    background: rgba(255,255,255,0.03) !important;
+    border-color: rgba(255,255,255,0.06) !important;
+    border-radius: 10px !important;
+}
+[data-testid="stSidebar"] .stMultiSelect span {
+    color: #CBD5E1 !important;
+}
+[data-testid="stSidebar"] .stMultiSelect [data-baseweb="tag"] {
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 6px !important;
+}
+[data-testid="stSidebar"] .stMultiSelect [data-baseweb="tag"] span {
+    color: #E2E8F0 !important;
+    font-size: 12px !important;
 }
 
 /* ─── TYPOGRAPHY ─── */
 h1, h2, h3, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
-    color: #E2E8F0 !important;
+    font-family: 'Outfit', sans-serif !important;
+    color: #F1F5F9 !important;
 }
-p, span, li, .stMarkdown p, label {
+p, span, li, .stMarkdown p {
     color: #94A3B8 !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Outfit', sans-serif !important;
 }
 
-/* ─── HERO ─── */
-.hero {
-    text-align: center;
-    padding: 2.5rem 1rem 1.5rem;
-    position: relative;
-    z-index: 2;
-    animation: heroSlide 0.9s ease-out;
-}
-@keyframes heroSlide {
-    from { opacity: 0; transform: translateY(35px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #38BDF8;
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    border-radius: 100px;
-    padding: 6px 18px;
-    background: rgba(56, 189, 248, 0.06);
-    margin-bottom: 1.25rem;
-    font-family: 'JetBrains Mono', monospace;
-}
-.hero-badge .dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: #38BDF8;
-    animation: dotBlink 2s infinite;
-}
-@keyframes dotBlink {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(56,189,248,0.4); }
-    50% { opacity: 0.5; box-shadow: 0 0 0 7px rgba(56,189,248,0); }
-}
-.hero-title {
-    font-size: clamp(2.2rem, 5vw, 3.2rem);
+/* Main title */
+.main-title {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
     font-weight: 800;
-    letter-spacing: -0.035em;
-    line-height: 1.08;
-    margin-bottom: 0.85rem;
-    background: linear-gradient(135deg, #E2E8F0 0%, #38BDF8 45%, #A78BFA 75%, #FB7185 100%);
-    background-size: 300% auto;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(135deg, #FFFFFF 0%, #94A3B8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: gradShift 6s ease-in-out infinite;
 }
-@keyframes gradShift {
-    0%, 100% { background-position: 0% center; }
-    50% { background-position: 300% center; }
-}
-.hero-sub {
-    font-size: 0.95rem;
-    color: #64748B !important;
-    font-weight: 300;
-    max-width: 520px;
-    margin: 0 auto;
-    line-height: 1.75;
-}
-.hero-stats {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    margin-top: 1.75rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid rgba(255,255,255,0.04);
-    flex-wrap: wrap;
-}
-.hs-item { text-align: center; }
-.hs-val {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #E2E8F0 !important;
-}
-.hs-lbl {
-    font-size: 0.65rem;
+.main-sub {
+    font-size: 0.9rem;
     color: #475569 !important;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-top: 3px;
-}
-.divider {
-    width: 50px; height: 2px;
-    background: linear-gradient(90deg, transparent, #38BDF8, transparent);
-    margin: 1.5rem auto;
+    font-weight: 300;
 }
 
-/* ─── FORM SECTIONS ─── */
-.form-section {
-    background: rgba(15, 17, 28, 0.75);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 18px;
-    padding: 1.75rem 2rem;
-    margin-bottom: 1.25rem;
+/* ─── HERO BADGE ─── */
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #E2E8F0;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    padding: 5px 14px;
+    background: rgba(255,255,255,0.04);
+    margin-bottom: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── METRIC CARDS ─── */
+[data-testid="stMetric"] {
+    background: rgba(15, 17, 26, 0.7) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255,255,255,0.05) !important;
+    border-radius: 14px !important;
+    padding: 1.1rem 1.25rem !important;
+    transition: all 0.3s ease !important;
     position: relative;
-    z-index: 2;
-    animation: sectionIn 0.7s ease-out both;
+    overflow: hidden;
 }
-.form-section:nth-child(1) { animation-delay: 0.1s; }
-.form-section:nth-child(2) { animation-delay: 0.2s; }
-.form-section:nth-child(3) { animation-delay: 0.3s; }
-.form-section:nth-child(4) { animation-delay: 0.4s; }
-@keyframes sectionIn {
-    from { opacity: 0; transform: translateY(25px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.form-section::before {
+[data-testid="stMetric"]::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.15), transparent);
-    border-radius: 18px 18px 0 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
 }
-.form-section-head {
+[data-testid="stMetric"]:hover {
+    border-color: rgba(255,255,255,0.1) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.3) !important;
+}
+[data-testid="stMetric"] label {
+    color: #64748B !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+}
+[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    color: #F1F5F9 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+}
+[data-testid="stMetric"] [data-testid="stMetricDelta"] {
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* ─── SECTION HEADERS ─── */
+.section-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 1rem;
-    padding-bottom: 0.85rem;
+    gap: 12px;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid rgba(255,255,255,0.04);
 }
-.fs-icon {
+.sh-icon {
     width: 36px; height: 36px;
     border-radius: 10px;
     display: flex;
@@ -213,611 +207,647 @@ p, span, li, .stMarkdown p, label {
     font-size: 18px;
     flex-shrink: 0;
 }
-.fs-title {
-    font-size: 0.85rem;
+.sh-text {
+    font-size: 1rem;
     font-weight: 600;
     color: #E2E8F0 !important;
-    letter-spacing: 0.01em;
 }
-.fs-sub {
+.sh-sub {
     font-size: 0.7rem;
     color: #475569 !important;
     margin-top: 1px;
 }
 
-/* ─── STREAMLIT WIDGET OVERRIDES ─── */
-/* Slider */
-[data-testid="stSlider"] label {
-    color: #94A3B8 !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
+/* ─── DATAFRAME ─── */
+[data-testid="stDataFrame"] {
+    border: 1px solid rgba(255,255,255,0.05) !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
 }
-[data-testid="stSlider"] [data-testid="stThumbValue"] {
-    color: #38BDF8 !important;
-    font-family: 'JetBrains Mono', monospace !important;
+
+/* ─── TABS ─── */
+[data-testid="stTabs"] button {
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 500 !important;
+    color: #64748B !important;
+    border: none !important;
+    padding: 0.6rem 1.5rem !important;
+    transition: all 0.3s ease !important;
+    font-size: 14px !important;
+}
+[data-testid="stTabs"] button[aria-selected="true"] {
+    color: #F1F5F9 !important;
+    border-bottom: 2px solid #F1F5F9 !important;
+}
+[data-testid="stTabs"] button:hover {
+    color: #CBD5E1 !important;
+}
+
+/* ─── EXPANDER ─── */
+[data-testid="stExpander"] {
+    background: rgba(15, 17, 26, 0.5) !important;
+    border: 1px solid rgba(255,255,255,0.05) !important;
+    border-radius: 14px !important;
+}
+[data-testid="stExpander"] summary {
+    color: #CBD5E1 !important;
     font-weight: 500 !important;
 }
-
-/* Radio */
-[data-testid="stRadio"] label {
+[data-testid="stExpander"] .stMarkdown p,
+[data-testid="stExpander"] .stMarkdown li {
     color: #94A3B8 !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
-    font-size: 14px !important;
-}
-[data-testid="stRadio"] div[role="radiogroup"] label {
-    color: #CBD5E1 !important;
-    background: rgba(255,255,255,0.02) !important;
-    border: 1px solid rgba(255,255,255,0.06) !important;
-    border-radius: 10px !important;
-    padding: 0.4rem 1rem !important;
-    transition: all 0.3s ease !important;
-}
-[data-testid="stRadio"] div[role="radiogroup"] label:hover {
-    border-color: rgba(56, 189, 248, 0.3) !important;
-    background: rgba(56, 189, 248, 0.04) !important;
+    font-size: 13px !important;
+    line-height: 1.8 !important;
 }
 
-/* Number input */
-[data-testid="stNumberInput"] label {
-    color: #94A3B8 !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
-    font-size: 14px !important;
-}
-[data-testid="stNumberInput"] input {
-    background: rgba(15, 23, 42, 0.9) !important;
-    border: 1px solid rgba(56, 189, 248, 0.2) !important;
+/* ─── DATE INPUT ─── */
+[data-testid="stDateInput"] input {
+    background: rgba(15, 17, 26, 0.8) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
     border-radius: 10px !important;
     color: #FFFFFF !important;
     -webkit-text-fill-color: #FFFFFF !important;
     font-family: 'JetBrains Mono', monospace !important;
-    font-size: 15px !important;
-    font-weight: 500 !important;
-    caret-color: #38BDF8 !important;
+    font-size: 14px !important;
 }
-[data-testid="stNumberInput"] input:focus {
-    border-color: rgba(56, 189, 248, 0.5) !important;
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.12) !important;
-    background: rgba(15, 23, 42, 1) !important;
+[data-testid="stDateInput"] input:focus {
+    border-color: rgba(255,255,255,0.2) !important;
 }
-[data-testid="stNumberInput"] input::placeholder {
-    color: #475569 !important;
-    -webkit-text-fill-color: #475569 !important;
-}
-/* Number input +/- buttons */
-[data-testid="stNumberInput"] button {
-    color: #38BDF8 !important;
-    border-color: rgba(56, 189, 248, 0.15) !important;
-    background: rgba(56, 189, 248, 0.05) !important;
-    transition: all 0.2s ease !important;
-}
-[data-testid="stNumberInput"] button:hover {
-    background: rgba(56, 189, 248, 0.12) !important;
-    border-color: rgba(56, 189, 248, 0.3) !important;
-}
-/* Slider track & thumb */
-[data-testid="stSlider"] [data-testid="stTickBar"] { background: transparent !important; }
-[data-testid="stSlider"] div[role="slider"] {
-    background: #38BDF8 !important;
-    border-color: #38BDF8 !important;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3) !important;
-}
-/* Slider min/max labels */
-[data-testid="stSlider"] [data-testid="stTickBarMin"],
-[data-testid="stSlider"] [data-testid="stTickBarMax"] {
-    color: #475569 !important;
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 11px !important;
+[data-testid="stDateInput"] label {
+    color: #94A3B8 !important;
+    font-size: 13px !important;
 }
 
-/* Form submit button */
-[data-testid="stFormSubmitButton"] button {
-    background: linear-gradient(135deg, #38BDF8 0%, #818CF8 100%) !important;
-    color: #fff !important;
-    border: none !important;
-    border-radius: 14px !important;
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+/* ─── SUBHEADER STYLING ─── */
+.stMarkdown h2 {
+    font-size: 1.15rem !important;
     font-weight: 600 !important;
-    font-size: 15px !important;
-    padding: 0.75rem 2.5rem !important;
-    letter-spacing: 0.02em !important;
-    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1) !important;
-    width: 100% !important;
-    margin-top: 0.5rem !important;
+    color: #E2E8F0 !important;
+    margin-top: 1.75rem !important;
+    margin-bottom: 0.75rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 1px solid rgba(255,255,255,0.04) !important;
 }
-[data-testid="stFormSubmitButton"] button:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 8px 30px rgba(56, 189, 248, 0.25) !important;
-}
-[data-testid="stFormSubmitButton"] button:active {
-    transform: translateY(0) scale(0.98) !important;
+.stMarkdown h3 {
+    font-size: 0.95rem !important;
+    font-weight: 500 !important;
+    color: #CBD5E1 !important;
 }
 
-/* Hide default st.subheader */
-.stSubheader, [data-testid="stSubheader"] { display: none !important; }
+/* ─── DIVIDER ─── */
+hr {
+    border: none !important;
+    border-top: 1px solid rgba(255,255,255,0.04) !important;
+    margin: 1.5rem 0 !important;
+}
 
-/* Expander override */
-[data-testid="stExpander"] {
-    border: 1px solid rgba(255,255,255,0.05) !important;
+/* ─── TEXT BLOCK ─── */
+.styled-text {
+    font-size: 14px;
+    color: #94A3B8 !important;
+    line-height: 1.85;
+    background: rgba(15, 17, 26, 0.5);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 14px;
+    padding: 1.5rem;
+}
+
+/* ─── CHART CONTAINERS ─── */
+[data-testid="stVegaLiteChart"],
+[data-testid="stPlotlyChart"] {
+    background: rgba(15, 17, 26, 0.5) !important;
+    border: 1px solid rgba(255,255,255,0.04) !important;
     border-radius: 14px !important;
-    background: rgba(15, 17, 28, 0.5) !important;
+    padding: 0.5rem !important;
+    overflow: hidden !important;
 }
-
-/* iframe */
-iframe { border: none !important; }
 
 /* ─── FOOTER ─── */
 .app-footer {
     text-align: center;
-    padding: 2.5rem 0 2rem;
-    margin-top: 2rem;
+    padding: 2.5rem 0 1.5rem;
+    margin-top: 3rem;
     border-top: 1px solid rgba(255,255,255,0.03);
 }
-.ft { font-size: 0.65rem; color: #334155 !important; letter-spacing: 0.12em; text-transform: uppercase; }
-.ft-tags { display: flex; justify-content: center; gap: 10px; margin-top: 0.6rem; flex-wrap: wrap; }
+.ft { font-size: 0.6rem; color: #334155 !important; letter-spacing: 0.12em; text-transform: uppercase; }
+.ft-tags { display: flex; justify-content: center; gap: 8px; margin-top: 0.5rem; flex-wrap: wrap; }
 .ft-tag {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
+    font-size: 0.55rem;
     color: #475569;
     background: rgba(255,255,255,0.02);
     border: 1px solid rgba(255,255,255,0.04);
-    padding: 3px 10px;
-    border-radius: 6px;
+    padding: 2px 8px;
+    border-radius: 4px;
 }
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 768px) {
-    .hero-title { font-size: 2rem; }
-    .hero-stats { gap: 1.5rem; }
-    .form-section { padding: 1.25rem; }
+    .main-title { font-size: 1.5rem; }
+    [data-testid="stMetric"] { padding: 0.85rem 1rem !important; }
+    [data-testid="stMetric"] [data-testid="stMetricValue"] { font-size: 1.2rem !important; }
 }
 </style>
 """, unsafe_allow_html=True)
 
 
 # ===============================
-# RESULT HTML (via components.html)
+# PLOTLY THEME HELPER
 # ===============================
-def build_result_html(result, proba, record_dict):
-    is_diabetic = result == 1
-    prob = proba[1] * 100 if is_diabetic else proba[0] * 100
-    risk_prob = proba[1] * 100
+PLOTLY_LAYOUT = dict(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(family="Outfit, sans-serif", color="#94A3B8", size=12),
+    title_font=dict(family="Outfit, sans-serif", color="#E2E8F0", size=15),
+    legend=dict(
+        bgcolor="rgba(0,0,0,0)",
+        borderwidth=0,
+        font=dict(color="#94A3B8", size=11)
+    ),
+    xaxis=dict(
+        gridcolor="rgba(255,255,255,0.03)",
+        zerolinecolor="rgba(255,255,255,0.05)",
+        tickfont=dict(color="#64748B"),
+        title_font=dict(color="#94A3B8")
+    ),
+    yaxis=dict(
+        gridcolor="rgba(255,255,255,0.03)",
+        zerolinecolor="rgba(255,255,255,0.05)",
+        tickfont=dict(color="#64748B"),
+        title_font=dict(color="#94A3B8")
+    ),
+    margin=dict(l=20, r=20, t=50, b=20),
+    hoverlabel=dict(bgcolor="#1E293B", font_color="#F1F5F9", bordercolor="rgba(255,255,255,0.1)")
+)
 
-    if is_diabetic:
-        color = "#FB7185"
-        bg = "rgba(251, 113, 133, 0.06)"
-        border = "rgba(251, 113, 133, 0.25)"
-        icon = "🔴"
-        label = "Diabetic — High Risk"
-        tag_text = "Positive detection"
-        severity = "High"
-        message = "The model indicates a high probability of diabetes. Please consult a healthcare professional for comprehensive blood work and clinical evaluation."
-        action = "Schedule fasting glucose and OGTT tests. Review medication options with your endocrinologist. Begin dietary modifications and increase physical activity."
-    else:
-        color = "#34D399"
-        bg = "rgba(52, 211, 153, 0.06)"
-        border = "rgba(52, 211, 153, 0.25)"
-        icon = "🟢"
-        label = "Not Diabetic — Low Risk"
-        tag_text = "Negative detection"
-        severity = "Low"
-        message = "The model indicates a low probability of diabetes. Maintain your current healthy lifestyle and schedule regular checkups."
-        action = "Continue balanced diet and regular exercise. Monitor blood sugar annually. Maintain healthy BMI and stay hydrated."
+# Adidas-inspired color palette
+COLORS = ["#FFFFFF", "#A3A3A3", "#64748B", "#CBD5E1", "#94A3B8", "#475569", "#E2E8F0"]
+COLORS_VIVID = ["#38BDF8", "#818CF8", "#FB7185", "#34D399", "#FBBF24", "#A78BFA", "#F472B6"]
 
-    # Risk factors analysis
-    risk_flags = []
-    if record_dict['bmi'] > 30:
-        risk_flags.append(("BMI", f"{record_dict['bmi']:.1f}", "Above 30 — obese range", "#F59E0B"))
-    if record_dict['a1c'] > 6.5:
-        risk_flags.append(("HbA1c", f"{record_dict['a1c']:.1f}%", "Above 6.5% — diabetic range", "#FB7185"))
-    elif record_dict['a1c'] > 5.7:
-        risk_flags.append(("HbA1c", f"{record_dict['a1c']:.1f}%", "5.7-6.5% — prediabetic range", "#F59E0B"))
-    if record_dict['bsr'] > 200:
-        risk_flags.append(("Blood Sugar", str(record_dict['bsr']), "Above 200 — very high", "#FB7185"))
-    elif record_dict['bsr'] > 140:
-        risk_flags.append(("Blood Sugar", str(record_dict['bsr']), "140-200 — elevated", "#F59E0B"))
-    if record_dict['sys'] > 140:
-        risk_flags.append(("Systolic BP", str(record_dict['sys']), "Above 140 — hypertensive", "#F59E0B"))
-    if record_dict['family_history'] == 1:
-        risk_flags.append(("Family History", "Positive", "Genetic predisposition present", "#A78BFA"))
-    if record_dict['exercise'] < 15:
-        risk_flags.append(("Exercise", f"{record_dict['exercise']} min/day", "Below recommended 30 min/day", "#F59E0B"))
 
-    risk_html = ""
-    if risk_flags:
-        risk_items = ""
-        for name, val, desc, rcolor in risk_flags:
-            risk_items += f"""
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.04);border-radius:10px;">
-                <div style="width:4px;height:36px;border-radius:4px;background:{rcolor};flex-shrink:0;margin-top:2px;"></div>
-                <div style="flex:1;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <span style="font-size:12px;font-weight:600;color:#E2E8F0;">{name}</span>
-                        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:{rcolor};font-weight:500;">{val}</span>
-                    </div>
-                    <div style="font-size:11px;color:#64748B;margin-top:2px;">{desc}</div>
-                </div>
-            </div>
-            """
-        risk_html = f"""
-        <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(255,255,255,0.05);">
-            <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:0.85rem;">⚡ Risk Factor Analysis</div>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-                {risk_items}
-            </div>
+# ===============================
+# DATA
+# ===============================
+@st.cache_data
+def load_data():
+    df = pd.read_csv("adidas_cleaned.xls")
+    df["invoice_date"] = pd.to_datetime(df["invoice_date"])
+    month_order = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+    df['month_name'] = pd.Categorical(df['month_name'], categories=month_order, ordered=True)
+    return df
+
+df = load_data()
+
+# ─── SIDEBAR ───
+st.sidebar.title("ADIDAS SALES DATA Analysis 2020 - 2021")
+try:
+    img = Image.open("logo.png")
+    st.sidebar.image(img)
+except:
+    st.sidebar.markdown("""
+    <div style="text-align:center;padding:1rem 0;">
+        <span style="font-size:2.5rem;font-weight:800;color:#FFFFFF;letter-spacing:-0.05em;">adidas</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+side = st.sidebar.radio("Go to", ["Data Set Overview", "DashBoard"])
+
+
+# ===============================
+# PAGE: DATA SET OVERVIEW
+# ===============================
+if side == "Data Set Overview":
+    st.markdown("""
+    <div class="hero-badge">👟 Adidas US Sales</div>
+    <div class="main-title">Sales Dashboard<br>2020 — 2021</div>
+    <div class="main-sub">Comprehensive analysis of Adidas US retail performance across regions, products, and channels.</div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
+
+    st.markdown("""
+    <div class="section-header">
+        <div class="sh-icon" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.12);">📊</div>
+        <div>
+            <div class="sh-text">Dataset Overview</div>
+            <div class="sh-sub">About the Adidas US sales dataset</div>
         </div>
-        """
-    else:
-        risk_html = """
-        <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(255,255,255,0.05);">
-            <div style="font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:0.85rem;">⚡ Risk Factor Analysis</div>
-            <div style="font-size:13px;color:#34D399;padding:12px;background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.15);border-radius:10px;">
-                All monitored parameters are within healthy ranges. No significant risk factors detected.
-            </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""<div class="styled-text">
+        An Adidas sales dataset is a collection of data that includes information on the sales of Adidas products.
+        This type of dataset may include details such as the number of units sold, the total sales revenue,
+        the location of the sales, the type of product sold, and any other relevant information.
+        Adidas sales data can be useful for a variety of purposes, such as analyzing sales trends,
+        identifying successful products or marketing campaigns, and developing strategies for future sales.
+        It can also be used to compare Adidas sales to those of competitors, or to analyze the effectiveness of different marketing or sales channels.
+        There are a variety of sources that could potentially provide an Adidas sales dataset,
+        including Adidas itself, market research firms, government agencies, or other organizations that track sales data.
+        The specific data points included in an Adidas sales dataset may vary depending on the source and the purpose for which it is being used.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="section-header">
+        <div class="sh-icon" style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.12);">📋</div>
+        <div>
+            <div class="sh-text">Column Description</div>
+            <div class="sh-sub">What each field in the dataset represents</div>
         </div>
-        """
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Gauge visual
-    gauge_pct = risk_prob
-    gauge_color = "#34D399" if gauge_pct < 30 else ("#F59E0B" if gauge_pct < 60 else "#FB7185")
-    gauge_label = "Low" if gauge_pct < 30 else ("Moderate" if gauge_pct < 60 else "High")
+    with st.expander("Dataset Column Details"):
+        st.markdown("""
+        - **retailer**: Retailer selling Adidas products  
+        - **region**: Geographic region in the US  
+        - **state**: State where the sale happened  
+        - **city**: City of the sale  
 
-    return f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-        *{{margin:0;padding:0;box-sizing:border-box;}}
-        body{{font-family:'Plus Jakarta Sans',sans-serif;background:transparent;color:#E2E8F0;padding:6px;}}
-        .card{{background:{bg};border:1px solid {border};border-radius:20px;padding:1.75rem;animation:pop 0.8s cubic-bezier(0.22,1,0.36,1);}}
-        @keyframes pop{{from{{opacity:0;transform:translateY(25px) scale(0.97);}}to{{opacity:1;transform:translateY(0) scale(1);}}}}
-        .hdr{{display:flex;align-items:center;gap:14px;margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,0.05);}}
-        .ico{{width:54px;height:54px;border-radius:14px;background:{bg};border:1px solid {border};display:flex;align-items:center;justify-content:center;font-size:26px;}}
-        .cls{{font-size:1.35rem;font-weight:700;color:#E2E8F0;}}
-        .tag{{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:{color};margin-top:3px;}}
+        - **product**: Product category  
+        - **sales_method**: Sales channel (In-store / Online / Outlet)  
 
-        .gauge-area{{display:flex;gap:1.5rem;margin-bottom:1.5rem;flex-wrap:wrap;}}
-        .gauge-box{{flex:1;min-width:180px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:14px;padding:1.25rem;text-align:center;}}
-        .gauge-label{{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:0.75rem;}}
-        .gauge-ring{{width:100px;height:100px;border-radius:50%;margin:0 auto 0.75rem;position:relative;
-            background:conic-gradient({gauge_color} 0% {gauge_pct}%, rgba(255,255,255,0.04) {gauge_pct}% 100%);
-            display:flex;align-items:center;justify-content:center;}}
-        .gauge-inner{{width:78px;height:78px;border-radius:50%;background:#0F1120;display:flex;flex-direction:column;align-items:center;justify-content:center;}}
-        .gauge-pct{{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:{gauge_color};}}
-        .gauge-txt{{font-size:9px;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;}}
-        .gauge-status{{font-size:13px;font-weight:600;color:{gauge_color};}}
+        - **price_per_unit**: Price per item  
+        - **units_sold**: Number of items sold  
+        - **total_sales**: Total revenue generated  
+        - **operating_profit**: Profit after operating costs  
+        - **operating_margin**: Profit percentage  
 
-        .info-row{{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.5rem;}}
-        .info-box{{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:0.85rem;}}
-        .info-lbl{{font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;font-weight:600;}}
-        .info-val{{font-size:13px;color:#E2E8F0;font-weight:500;}}
+        - **invoice_date**: Date of transaction  
+        - **year**: Year of sale  
+        - **month**: Month number  
+        - **month_name**: Month name
+        """)
 
-        .desc{{font-size:13px;color:#94A3B8;line-height:1.75;margin-bottom:1.25rem;}}
+    st.markdown("""
+    <div class="section-header">
+        <div class="sh-icon" style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.12);">🗃️</div>
+        <div>
+            <div class="sh-text">Dataset Preview</div>
+            <div class="sh-sub">First few rows of the dataset</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        .abox{{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:14px;padding:1.15rem;}}
-        .ah{{display:flex;align-items:center;gap:8px;margin-bottom:0.6rem;}}
-        .at{{font-size:10px;color:#E2E8F0;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;}}
-        .atxt{{font-size:13px;color:#94A3B8;line-height:1.7;}}
+    st.dataframe(df.head(), use_container_width=True)
 
-        .prob-section{{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(255,255,255,0.05);}}
-        .prob-title{{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1rem;font-weight:600;}}
-        .prob-row{{display:flex;align-items:center;gap:12px;margin-bottom:10px;}}
-        .prob-name{{font-size:13px;color:#94A3B8;width:120px;flex-shrink:0;}}
-        .prob-bar{{flex:1;height:6px;background:rgba(255,255,255,0.04);border-radius:100px;overflow:hidden;}}
-        .prob-fill{{height:100%;border-radius:100px;}}
-        .prob-val{{font-family:'JetBrains Mono',monospace;font-size:12px;color:#64748B;width:55px;text-align:right;flex-shrink:0;}}
 
-        @media(max-width:600px){{
-            .info-row{{grid-template-columns:1fr;}}
-            .gauge-area{{flex-direction:column;}}
-        }}
-    </style>
-    </head>
-    <body>
-    <div class="card">
-        <div class="hdr">
-            <div class="ico">{icon}</div>
+# ===============================
+# PAGE: DASHBOARD
+# ===============================
+if side == "DashBoard":
+    option = st.sidebar.radio("Go To ", ["Univariate Analysis", "Bivariate Analysis and Multivariate Analysis"])
+
+    if option == "Univariate Analysis":
+        st.markdown("""
+        <div class="hero-badge">📈 Performance Metrics</div>
+        <div class="main-title">Univariate Analysis</div>
+        <div class="main-sub">Key performance indicators across the full dataset and custom date ranges.</div>
+        """, unsafe_allow_html=True)
+
+        st.divider()
+
+        df["invoice_date"] = pd.to_datetime(df["invoice_date"])
+        df_2020 = df[(df["invoice_date"] >= "2020-01-01") & (df["invoice_date"] <= "2020-12-31")]
+        df_2021 = df[(df["invoice_date"] >= "2021-01-01") & (df["invoice_date"] <= "2021-12-31")]
+
+        # ─── OVERALL KPIs ───
+        st.markdown("""
+        <div class="section-header">
+            <div class="sh-icon" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.12);">🎯</div>
             <div>
-                <div class="cls">{label}</div>
-                <div class="tag">{tag_text}</div>
+                <div class="sh-text">Overall Performance</div>
+                <div class="sh-sub">Aggregated across 2020–2021</div>
             </div>
         </div>
+        """, unsafe_allow_html=True)
 
-        <div class="gauge-area">
-            <div class="gauge-box">
-                <div class="gauge-label">Diabetes Risk Score</div>
-                <div class="gauge-ring">
-                    <div class="gauge-inner">
-                        <div class="gauge-pct">{risk_prob:.0f}%</div>
-                        <div class="gauge-txt">risk</div>
-                    </div>
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Sales", f"${df['total_sales'].sum():,.0f}")
+        col2.metric("Total Units Sold", f"{df['units_sold'].sum():,.0f}")
+        col3.metric("Total Operating Profit", f"${df['operating_profit'].sum():,.0f}")
+
+        # ─── YEAR-WISE ───
+        st.markdown("""
+        <div class="section-header">
+            <div class="sh-icon" style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.12);">📅</div>
+            <div>
+                <div class="sh-text">Year-over-Year Comparison</div>
+                <div class="sh-sub">2020 vs 2021 performance breakdown</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col4, col5 = st.columns(2)
+        col4.metric("Avg Operating Margin (2020) in Percent", f"{df_2020['operating_margin'].mean():,.0f}")
+        col5.metric("Avg Operating Margin (2021) in Percent", f"{df_2021['operating_margin'].mean():,.0f}")
+
+        col6, col7, col8 = st.columns(3)
+        col6.metric("Total Sales (2020)", f"${df_2020['total_sales'].sum():,.0f}")
+        col7.metric("Total Sales (2021)", f"${df_2021['total_sales'].sum():,.0f}")
+        col8.metric("Units Sold (2020)", f"{df_2020['units_sold'].sum():,.0f}")
+
+        col9, col10, col11 = st.columns(3)
+        col9.metric("Units Sold (2021)", f"{df_2021['units_sold'].sum():,.0f}")
+        col10.metric("Operating Profit (2020)", f"${df_2020['operating_profit'].sum():,.0f}")
+        col11.metric("Operating Profit (2021)", f"${df_2021['operating_profit'].sum():,.0f}")
+
+        st.metric("Overall Avg Operating Margin in Percent", f"{df['operating_margin'].mean():,.0f}")
+
+        # ─── DYNAMIC PERIOD ───
+        st.markdown("""
+        <div class="section-header">
+            <div class="sh-icon" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.12);">🔍</div>
+            <div>
+                <div class="sh-text">Dynamic Period Analysis</div>
+                <div class="sh-sub">Select a custom date range to explore</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.caption("Use the date pickers below to filter metrics for any custom period.")
+
+        d1, d2 = st.columns(2)
+        with d1:
+            start_date = st.date_input("Start Date", value=pd.to_datetime("2020-01-01"))
+        with d2:
+            end_date = st.date_input("End Date", value=pd.to_datetime("2021-12-31"))
+
+        start_ts = pd.Timestamp(start_date)
+        end_ts = pd.Timestamp(end_date)
+        df_period = df[(df["invoice_date"] >= start_ts) & (df["invoice_date"] <= end_ts)]
+
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Sales", f"${df_period['total_sales'].sum():,.0f}")
+        col2.metric("Total Units Sold", f"{df_period['units_sold'].sum():,.0f}")
+        col3.metric("Total Operating Profit", f"${df_period['operating_profit'].sum():,.0f}")
+
+        col4, col5 = st.columns(2)
+        col4.metric("Average Operating Margin", f"{df_period['operating_margin'].mean():,.0f}")
+
+
+    # ===============================
+    # BIVARIATE & MULTIVARIATE
+    # ===============================
+    if option == "Bivariate Analysis and Multivariate Analysis":
+
+        tab1, tab2 = st.tabs(["📊 Graphs", "📋 Filtered KPIs"])
+
+        with tab1:
+            st.markdown("""
+            <div class="hero-badge">📊 Deep Analysis</div>
+            <div class="main-title">Bivariate & Multivariate</div>
+            <div class="main-sub">Explore relationships between variables with interactive filters.</div>
+            """, unsafe_allow_html=True)
+
+            st.divider()
+
+            # ─── SIDEBAR FILTERS ───
+            region = st.sidebar.multiselect("Select Region", options=df["region"].unique(), default=df["region"].unique())
+            retailer = st.sidebar.multiselect("Select Retailer", options=df["retailer"].unique(), default=df["retailer"].unique())
+            product = st.sidebar.multiselect("Select Product", options=df["product"].unique(), default=df["product"].unique())
+            sales_method = st.sidebar.multiselect("Select Sales Method", options=df["sales_method"].unique(), default=df["sales_method"].unique())
+            year = st.sidebar.multiselect("Select Year", options=sorted(df["year"].unique()), default=sorted(df["year"].unique()))
+            state = st.sidebar.multiselect("Select state", options=df["state"].unique(), default=df["state"].unique())
+            city = st.sidebar.multiselect("Select city", options=df["city"].unique(), default=df["city"].unique())
+
+            filtered_df = df[
+                (df["region"].isin(region)) &
+                (df["retailer"].isin(retailer)) &
+                (df["product"].isin(product)) &
+                (df["sales_method"].isin(sales_method)) &
+                (df["year"].isin(year)) &
+                (df["state"].isin(state)) &
+                (df["city"].isin(city))
+            ]
+
+            # ─── FILTERED DATA ───
+            st.markdown("""
+            <div class="section-header">
+                <div class="sh-icon" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.12);">🗃️</div>
+                <div>
+                    <div class="sh-text">Filtered Data</div>
+                    <div class="sh-sub">{:,} records match current filters</div>
                 </div>
-                <div class="gauge-status">{gauge_label} Risk</div>
             </div>
-            <div style="flex:1.5;display:flex;flex-direction:column;justify-content:center;">
-                <div class="info-row" style="margin-bottom:0;">
-                    <div class="info-box">
-                        <div class="info-lbl">Confidence</div>
-                        <div class="info-val" style="color:{color};">{prob:.1f}%</div>
-                    </div>
-                    <div class="info-box">
-                        <div class="info-lbl">Severity</div>
-                        <div class="info-val">{severity}</div>
-                    </div>
-                    <div class="info-box">
-                        <div class="info-lbl">Model</div>
-                        <div class="info-val">AdaBoost</div>
-                    </div>
+            """.format(len(filtered_df)), unsafe_allow_html=True)
+
+            st.dataframe(filtered_df, use_container_width=True)
+
+            # ─── SALES BY REGION & PRODUCT ───
+            st.markdown("""
+            <div class="section-header">
+                <div class="sh-icon" style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.12);">📊</div>
+                <div>
+                    <div class="sh-text">Sales Distribution</div>
+                    <div class="sh-sub">By region, product, and sales channel</div>
                 </div>
             </div>
-        </div>
+            """, unsafe_allow_html=True)
 
-        <div class="desc">{message}</div>
+            col1, col2 = st.columns(2)
+            with col1:
+                region_sales = filtered_df.groupby("region")["total_sales"].sum().reset_index()
+                fig_region = px.bar(region_sales, x="region", y="total_sales",
+                                    color_discrete_sequence=["#38BDF8"],
+                                    title="Sales by Region")
+                fig_region.update_layout(**PLOTLY_LAYOUT)
+                fig_region.update_traces(marker_line_width=0, marker_cornerradius=6)
+                st.plotly_chart(fig_region, use_container_width=True)
 
-        <div class="abox">
-            <div class="ah">
-                <span style="font-size:14px;">💊</span>
-                <span class="at">Recommended Action</span>
+            with col2:
+                product_sales = filtered_df.groupby("product")["total_sales"].sum().reset_index()
+                fig_product = px.bar(product_sales, x="product", y="total_sales",
+                                     color_discrete_sequence=["#818CF8"],
+                                     title="Sales by Product")
+                fig_product.update_layout(**PLOTLY_LAYOUT)
+                fig_product.update_traces(marker_line_width=0, marker_cornerradius=6)
+                st.plotly_chart(fig_product, use_container_width=True)
+
+            # Sales by method
+            method_sales = filtered_df.groupby("sales_method")["total_sales"].sum().reset_index()
+            fig_method = px.bar(method_sales, x="sales_method", y="total_sales",
+                                color_discrete_sequence=["#34D399"],
+                                title="Sales by Sales Method")
+            fig_method.update_layout(**PLOTLY_LAYOUT)
+            fig_method.update_traces(marker_line_width=0, marker_cornerradius=6)
+            st.plotly_chart(fig_method, use_container_width=True)
+
+            # ─── SALES TRENDS ───
+            st.markdown("""
+            <div class="section-header">
+                <div class="sh-icon" style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.12);">📈</div>
+                <div>
+                    <div class="sh-text">Sales Trends Over Time</div>
+                    <div class="sh-sub">Daily aggregated total sales</div>
+                </div>
             </div>
-            <div class="atxt">{action}</div>
-        </div>
+            """, unsafe_allow_html=True)
 
-        <div class="prob-section">
-            <div class="prob-title">Classification Probabilities</div>
-            <div class="prob-row">
-                <span class="prob-name">Not Diabetic</span>
-                <div class="prob-bar"><div class="prob-fill" style="width:{proba[0]*100:.1f}%;background:#34D399;"></div></div>
-                <span class="prob-val">{proba[0]*100:.1f}%</span>
+            sales_line = filtered_df.groupby("invoice_date")["total_sales"].sum().reset_index()
+            fig_line = px.area(sales_line, x="invoice_date", y="total_sales",
+                               color_discrete_sequence=["#38BDF8"],
+                               title="Sales Trend")
+            fig_line.update_layout(**PLOTLY_LAYOUT)
+            fig_line.update_traces(line=dict(width=2), fillcolor="rgba(56,189,248,0.06)")
+            st.plotly_chart(fig_line, use_container_width=True)
+
+            # ─── TOP & BOTTOM STATES ───
+            st.markdown("""
+            <div class="section-header">
+                <div class="sh-icon" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.12);">🏆</div>
+                <div>
+                    <div class="sh-text">Top & Bottom States</div>
+                    <div class="sh-sub">By total sales revenue</div>
+                </div>
             </div>
-            <div class="prob-row">
-                <span class="prob-name">Diabetic</span>
-                <div class="prob-bar"><div class="prob-fill" style="width:{proba[1]*100:.1f}%;background:#FB7185;"></div></div>
-                <span class="prob-val">{proba[1]*100:.1f}%</span>
+            """, unsafe_allow_html=True)
+
+            t1, t2 = st.columns(2)
+            with t1:
+                region_sales_top = filtered_df.groupby("state")["total_sales"].sum().reset_index()
+                region_sales_top = region_sales_top.sort_values(by="total_sales", ascending=False).head(5)
+                figqq = px.bar(region_sales_top, x="state", y="total_sales",
+                               color_discrete_sequence=["#34D399"],
+                               title="Top 5 States")
+                figqq.update_layout(**PLOTLY_LAYOUT)
+                figqq.update_traces(marker_line_width=0, marker_cornerradius=6)
+                st.plotly_chart(figqq, use_container_width=True)
+
+            with t2:
+                region_sales_bot = filtered_df.groupby("state")["total_sales"].sum().reset_index()
+                region_sales_bot = region_sales_bot.sort_values(by="total_sales", ascending=True).head(5)
+                figqq1 = px.bar(region_sales_bot, x="state", y="total_sales",
+                                color_discrete_sequence=["#FB7185"],
+                                title="Bottom 5 States")
+                figqq1.update_layout(**PLOTLY_LAYOUT)
+                figqq1.update_traces(marker_line_width=0, marker_cornerradius=6)
+                st.plotly_chart(figqq1, use_container_width=True)
+
+            # ─── MONTHLY TRENDS ───
+            st.markdown("""
+            <div class="section-header">
+                <div class="sh-icon" style="background:rgba(251,113,133,0.08);border:1px solid rgba(251,113,133,0.12);">📅</div>
+                <div>
+                    <div class="sh-text">Monthly Trends</div>
+                    <div class="sh-sub">Sales and units sold by month</div>
+                </div>
             </div>
-        </div>
+            """, unsafe_allow_html=True)
 
-        {risk_html}
-    </div>
-    </body>
-    </html>
-    """
+            mc1, mc2 = st.columns(2)
+            with mc1:
+                month_sales = filtered_df.groupby("month_name")["total_sales"].sum().reset_index()
+                fig_ms = px.line(month_sales, x="month_name", y="total_sales",
+                                 color_discrete_sequence=["#FBBF24"],
+                                 title="Total Sales by Month", markers=True)
+                fig_ms.update_layout(**PLOTLY_LAYOUT)
+                fig_ms.update_traces(line=dict(width=2.5))
+                st.plotly_chart(fig_ms, use_container_width=True)
 
+            with mc2:
+                month_units = filtered_df.groupby("month_name")["units_sold"].sum().reset_index()
+                fig_mu = px.line(month_units, x="month_name", y="units_sold",
+                                 color_discrete_sequence=["#A78BFA"],
+                                 title="Units Sold by Month", markers=True)
+                fig_mu.update_layout(**PLOTLY_LAYOUT)
+                fig_mu.update_traces(line=dict(width=2.5))
+                st.plotly_chart(fig_mu, use_container_width=True)
 
-def build_scan_html(step=1):
-    msgs = [
-        ("Preprocessing patient data...", "Validating 17 clinical parameters"),
-        ("Running AdaBoost classifier...", "Analyzing feature interactions"),
-        ("Computing risk assessment...", "Generating clinical report"),
-    ]
-    msg = msgs[min(step - 1, 2)]
-    steps = [
-        ("Validate", "done" if step >= 1 else ""),
-        ("Preprocess", "active" if step == 1 else ("done" if step > 1 else "")),
-        ("Classify", "active" if step == 2 else ("done" if step > 2 else "")),
-        ("Report", "active" if step == 3 else ""),
-    ]
-    sh = ""
-    for l, c in steps:
-        sh += f'<div class="s {c}"><span class="d"></span><span>{l}</span></div>'
+            # ─── RETAILER PERFORMANCE ───
+            st.markdown("""
+            <div class="section-header">
+                <div class="sh-icon" style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.12);">🏪</div>
+                <div>
+                    <div class="sh-text">Retailer Performance</div>
+                    <div class="sh-sub">Sales and profit by retail partner</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
-    return f"""
-    <!DOCTYPE html><html><head><meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-    <style>
-        *{{margin:0;padding:0;box-sizing:border-box;}}
-        body{{font-family:'Plus Jakarta Sans',sans-serif;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:240px;padding:2rem 1rem;}}
-        .ring{{width:64px;height:64px;border-radius:50%;border:3px solid rgba(56,189,248,0.12);border-top-color:#38BDF8;animation:sp 1s linear infinite;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:1.25rem;}}
-        @keyframes sp{{to{{transform:rotate(360deg);}}}}
-        .t1{{font-size:14px;color:#38BDF8;font-weight:500;text-align:center;}}
-        .t2{{font-size:11px;color:#475569;margin-top:0.3rem;text-align:center;}}
-        .pr{{display:flex;justify-content:center;gap:1.5rem;margin-top:1.5rem;flex-wrap:wrap;}}
-        .s{{display:flex;align-items:center;gap:5px;font-size:10px;color:#334155;}}
-        .s.active{{color:#38BDF8;}}
-        .s.done{{color:#94A3B8;}}
-        .d{{width:6px;height:6px;border-radius:50%;background:#1E293B;display:inline-block;}}
-        .s.done .d{{background:#94A3B8;}}
-        .s.active .d{{background:#38BDF8;box-shadow:0 0 8px rgba(56,189,248,0.4);}}
-    </style></head><body>
-    <div class="ring">🧬</div>
-    <div class="t1">{msg[0]}</div>
-    <div class="t2">{msg[1]}</div>
-    <div class="pr">{sh}</div>
-    </body></html>
-    """
+            r1, r2 = st.columns(2)
+            with r1:
+                ret_sales = filtered_df.groupby("retailer")["total_sales"].sum().reset_index()
+                fig_rs = px.bar(ret_sales, x="retailer", y="total_sales",
+                                color_discrete_sequence=["#38BDF8"],
+                                title="Total Sales by Retailer")
+                fig_rs.update_layout(**PLOTLY_LAYOUT)
+                fig_rs.update_traces(marker_line_width=0, marker_cornerradius=6)
+                st.plotly_chart(fig_rs, use_container_width=True)
 
+            with r2:
+                ret_profit = filtered_df.groupby("retailer")["operating_profit"].sum().reset_index()
+                fig_rp = px.bar(ret_profit, x="retailer", y="operating_profit",
+                                color_discrete_sequence=["#34D399"],
+                                title="Operating Profit by Retailer")
+                fig_rp.update_layout(**PLOTLY_LAYOUT)
+                fig_rp.update_traces(marker_line_width=0, marker_cornerradius=6)
+                st.plotly_chart(fig_rp, use_container_width=True)
 
-# ===============================
-# STREAMLIT UI
-# ===============================
+            # Product profit
+            prod_profit = filtered_df.groupby("product")["operating_profit"].sum().reset_index()
+            fig_pp = px.bar(prod_profit, x="product", y="operating_profit",
+                            color_discrete_sequence=["#F472B6"],
+                            title="Operating Profit by Product")
+            fig_pp.update_layout(**PLOTLY_LAYOUT)
+            fig_pp.update_traces(marker_line_width=0, marker_cornerradius=6)
+            st.plotly_chart(fig_pp, use_container_width=True)
 
-# ─── HERO ───
-st.markdown("""
-<div class="hero">
-    <div class="hero-badge">
-        <span class="dot"></span>
-        AI Clinical Analyzer
-    </div>
-    <div class="hero-title">Diabetes Risk<br>Prediction</div>
-    <div class="hero-sub">
-        Enter patient clinical parameters and let our machine learning model
-        assess diabetes risk with intelligent analysis in seconds.
-    </div>
-    <div class="hero-stats">
-        <div class="hs-item"><div class="hs-val">17</div><div class="hs-lbl">Parameters</div></div>
-        <div class="hs-item"><div class="hs-val">AdaBoost</div><div class="hs-lbl">Classifier</div></div>
-        <div class="hs-item"><div class="hs-val">2</div><div class="hs-lbl">Classes</div></div>
-        <div class="hs-item"><div class="hs-val">&lt;1s</div><div class="hs-lbl">Inference</div></div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+            # ─── SCATTER: SALES vs MARGIN ───
+            st.markdown("""
+            <div class="section-header">
+                <div class="sh-icon" style="background:rgba(244,114,182,0.08);border:1px solid rgba(244,114,182,0.12);">🔬</div>
+                <div>
+                    <div class="sh-text">Sales vs Operating Margin</div>
+                    <div class="sh-sub">Relationship between revenue and profitability</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
-st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-
-
-# ─── FORM ───
-with st.form("form"):
-
-    # Section 1 — Demographics
-    st.markdown("""
-    <div class="form-section-head">
-        <div class="fs-icon" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.15);">🧍</div>
-        <div>
-            <div class="fs-title">Demographics</div>
-            <div class="fs-sub">Basic patient information</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    d1, d2, d3 = st.columns(3)
-    with d1:
-        age = st.slider("Age", 10, 100, 30)
-    with d2:
-        gender = st.radio("Gender", ["Male", "Female"], horizontal=True)
-    with d3:
-        rgn = st.radio("Region", ["Urban", "Rural"], horizontal=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Section 2 — Body Metrics
-    st.markdown("""
-    <div class="form-section-head">
-        <div class="fs-icon" style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.15);">⚖️</div>
-        <div>
-            <div class="fs-title">Body Metrics</div>
-            <div class="fs-sub">Physical measurements and vitals</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    b1, b2, b3 = st.columns(3)
-    with b1:
-        wt = st.number_input("Weight (kg)", 30.0, 200.0, 70.0)
-    with b2:
-        bmi = st.number_input("BMI", 10.0, 60.0, 24.0)
-    with b3:
-        wst = st.number_input("Waist (inches)", 20.0, 80.0, 34.0)
-
-    bp1, bp2 = st.columns(2)
-    with bp1:
-        sys = st.slider("Systolic BP", 80, 200, 120)
-    with bp2:
-        dia = st.slider("Diastolic BP", 50, 120, 80)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Section 3 — Blood Work
-    st.markdown("""
-    <div class="form-section-head">
-        <div class="fs-icon" style="background:rgba(251,113,133,0.08);border:1px solid rgba(251,113,133,0.15);">🩸</div>
-        <div>
-            <div class="fs-title">Blood Work</div>
-            <div class="fs-sub">Lab results and glucose markers</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    bl1, bl2, bl3 = st.columns(3)
-    with bl1:
-        a1c = st.number_input("Hemoglobin A1c (%)", 3.0, 15.0, 5.5)
-    with bl2:
-        bsr = st.number_input("Random Blood Sugar", 50, 500, 90)
-    with bl3:
-        hdl = st.number_input("HDL Cholesterol", 10, 100, 50)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Section 4 — Clinical History
-    st.markdown("""
-    <div class="form-section-head">
-        <div class="fs-icon" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);">📋</div>
-        <div>
-            <div class="fs-title">Clinical History & Symptoms</div>
-            <div class="fs-sub">Medical background and current symptoms</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    c1, c2 = st.columns(2)
-    with c1:
-        his = st.radio("Family History of Diabetes", ["No", "Yes"], horizontal=True)
-        vision = st.radio("Vision Issues", ["No", "Yes"], horizontal=True)
-        dipsia = st.radio("Dipsia (Excessive Thirst)", ["No", "Yes"], horizontal=True)
-    with c2:
-        uria = st.radio("Uria (Sugar/Protein in Urine)", ["No", "Yes"], horizontal=True)
-        neph = st.radio("Nephropathy (Kidney Issues)", ["No", "Yes"], horizontal=True)
-        exr = st.slider("Exercise (minutes/day)", 0, 120, 30)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    predict_button = st.form_submit_button("🧬  Analyze Patient Risk")
+            fig_scatter = px.scatter(
+                filtered_df,
+                x="total_sales",
+                y="operating_margin",
+                color="region",
+                size="units_sold",
+                hover_data=["retailer", "product", "state"],
+                labels={
+                    "total_sales": "Total Sales ($)",
+                    "operating_margin": "Operating Margin (%)"
+                },
+                title="Total Sales vs Operating Margin",
+                color_discrete_sequence=COLORS_VIVID
+            )
+            fig_scatter.update_layout(**PLOTLY_LAYOUT)
+            fig_scatter.update_layout(height=500)
+            st.plotly_chart(fig_scatter, use_container_width=True)
 
 
-# ===============================
-# PREDICTION
-# ===============================
-if predict_button:
-    record = [
-        age,
-        1 if gender == "Male" else 0,
-        0 if rgn == "Urban" else 1,
-        wt,
-        bmi,
-        wst,
-        sys,
-        dia,
-        1 if his == "Yes" else 0,
-        a1c,
-        bsr,
-        1 if vision == "Yes" else 0,
-        exr,
-        1 if dipsia == "Yes" else 0,
-        1 if uria == "Yes" else 0,
-        1 if neph == "Yes" else 0,
-        hdl
-    ]
+        with tab2:
+            st.markdown("""
+            <div class="hero-badge">📋 Filtered Metrics</div>
+            <div class="main-title">Filtered KPIs</div>
+            <div class="main-sub">Key metrics for the currently selected data filters.</div>
+            """, unsafe_allow_html=True)
 
-    record_dict = {
-        'age': age, 'bmi': bmi, 'a1c': a1c, 'bsr': bsr,
-        'sys': sys, 'dia': dia, 'family_history': 1 if his == "Yes" else 0,
-        'exercise': exr, 'hdl': hdl, 'wt': wt, 'wst': wst
-    }
+            st.divider()
 
-    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-
-    # ─── SCANNING ANIMATION ───
-    scan_slot = st.empty()
-    with scan_slot.container():
-        components.html(build_scan_html(step=1), height=280)
-    time.sleep(0.7)
-
-    scan_slot.empty()
-    with scan_slot.container():
-        components.html(build_scan_html(step=2), height=280)
-
-    # ─── ACTUAL PREDICTION (LOGIC UNTOUCHED) ───
-    proba = model.predict_proba(np.array([record]))[0]
-    result = model.predict(np.array([record]))[0]
-
-    time.sleep(0.5)
-
-    # ─── SHOW RESULT ───
-    scan_slot.empty()
-    with scan_slot.container():
-        components.html(build_result_html(result, proba, record_dict), height=900, scrolling=True)
+            kpi1, kpi2, kpi3 = st.columns(3)
+            kpi1.metric("Total Sales", f"${filtered_df['total_sales'].sum():,.0f}")
+            kpi2.metric("Total Units Sold", f"{filtered_df['units_sold'].sum():,.0f}")
+            kpi3.metric("Avg Margin", f"{filtered_df['operating_margin'].mean():.1f}%")
 
 
 # ─── FOOTER ───
 st.markdown("""
 <div class="app-footer">
-    <div class="ft">Built with precision for portfolio demonstration</div>
+    <div class="ft">Adidas US Sales Dashboard — Portfolio Project</div>
     <div class="ft-tags">
-        <span class="ft-tag">Scikit-Learn</span>
-        <span class="ft-tag">AdaBoost</span>
         <span class="ft-tag">Streamlit</span>
+        <span class="ft-tag">Plotly</span>
+        <span class="ft-tag">Pandas</span>
         <span class="ft-tag">Python</span>
-        <span class="ft-tag">17 Features</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
