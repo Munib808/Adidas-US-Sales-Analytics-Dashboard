@@ -269,5 +269,3 @@ if side == "DashBoard":
             kpi1.metric("Total Sales", f"${filtered_df['total_sales'].sum():,.0f}")
             kpi2.metric("Total Units Sold", f"{filtered_df['units_sold'].sum():,.0f}")
             kpi3.metric("Avg Margin", f"{filtered_df['operating_margin'].mean():.1f}%")
-
-kindly beautify it and make it more professional
