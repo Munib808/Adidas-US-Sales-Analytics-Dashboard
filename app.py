@@ -46,63 +46,43 @@ st.markdown("""
     background: linear-gradient(180deg, #0C0D14 0%, #0F1018 100%) !important;
     border-right: 1px solid rgba(255,255,255,0.04) !important;
 }
+
+/* ============================
+   ✅ FIX: SIDEBAR FILTER COLORS
+   ============================ */
+[data-testid="stSidebar"] * {
+    color: #E2E8F0 !important;
+}
+
+[data-testid="stSidebar"] input {
+    color: #FFFFFF !important;
+}
+
+[data-testid="stSidebar"] .stMultiSelect span,
+[data-testid="stSidebar"] .stSelectbox span {
+    color: #FFFFFF !important;
+}
+
+[data-baseweb="menu"] {
+    background: #0F1018 !important;
+    color: #FFFFFF !important;
+}
+
+[data-baseweb="menu"] li {
+    color: #FFFFFF !important;
+}
+
+[data-baseweb="menu"] li:hover {
+    background: rgba(56,189,248,0.15) !important;
+}
+
+/* Sidebar rest styling */
 [data-testid="stSidebar"] .stMarkdown h1,
 [data-testid="stSidebar"] .stMarkdown h2,
 [data-testid="stSidebar"] .stMarkdown h3 {
     color: #E2E8F0 !important;
     font-family: 'Outfit', sans-serif !important;
-}
-[data-testid="stSidebar"] .stMarkdown p,
-[data-testid="stSidebar"] label,
-[data-testid="stSidebar"] span {
-    color: #94A3B8 !important;
-    font-family: 'Outfit', sans-serif !important;
-}
-/* Sidebar title override */
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1 {
-    font-size: 1rem !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.01em !important;
-    color: #F8FAFC !important;
-    padding-bottom: 0.75rem !important;
-    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
-    margin-bottom: 1rem !important;
-}
-/* Sidebar radio */
-[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label {
-    color: #CBD5E1 !important;
-    background: rgba(255,255,255,0.02) !important;
-    border: 1px solid rgba(255,255,255,0.05) !important;
-    border-radius: 10px !important;
-    padding: 0.5rem 0.85rem !important;
-    margin-bottom: 4px !important;
-    transition: all 0.3s ease !important;
-    font-size: 13px !important;
-}
-[data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label:hover {
-    border-color: rgba(255,255,255,0.12) !important;
-    background: rgba(255,255,255,0.04) !important;
-}
-/* Sidebar multiselect */
-[data-testid="stSidebar"] .stMultiSelect [data-baseweb="select"] {
-    background: rgba(255,255,255,0.03) !important;
-    border-color: rgba(255,255,255,0.06) !important;
-    border-radius: 10px !important;
-}
-[data-testid="stSidebar"] .stMultiSelect span {
-    color: #CBD5E1 !important;
-}
-[data-testid="stSidebar"] .stMultiSelect [data-baseweb="tag"] {
-    background: rgba(255,255,255,0.06) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    border-radius: 6px !important;
-}
-[data-testid="stSidebar"] .stMultiSelect [data-baseweb="tag"] span {
-    color: #E2E8F0 !important;
-    font-size: 12px !important;
-}
-
-/* ─── TYPOGRAPHY ─── */
+}/* ─── TYPOGRAPHY ─── */
 h1, h2, h3, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
     font-family: 'Outfit', sans-serif !important;
     color: #F1F5F9 !important;
