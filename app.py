@@ -1,93 +1,10 @@
+### Importing required modules
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 from PIL import Image
 
-# ===============================
-# PAGE CONFIG
-# ===============================
-st.set_page_config(
-    page_title="Adidas US Sales Analytics",
-    page_icon="👟",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# ===============================
-# CUSTOM CSS — PROFESSIONAL DARK THEME
-# ===============================
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;500&display=swap');
-
-/* Main App Background */
-.stApp {
-    background: #0B0E14;
-    font-family: 'Outfit', sans-serif;
-}
-
-/* Sidebar Styling */
-[data-testid="stSidebar"] {
-    background-color: #0F1219 !important;
-    border-right: 1px solid rgba(255,255,255,0.05);
-}
-
-/* Glassmorphism Cards */
-div[data-testid="stMetric"], .chart-container {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    border-radius: 12px !important;
-    padding: 15px !important;
-}
-
-/* Typography Overrides */
-h1, h2, h3 {
-    color: #F8FAFC !important;
-    font-weight: 600 !important;
-}
-
-.main-title {
-    font-size: 2.5rem;
-    font-weight: 800;
-    letter-spacing: -1px;
-    background: linear-gradient(90deg, #FFFFFF, #94A3B8);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 0rem;
-}
-
-/* Custom Metric Styling */
-[data-testid="stMetricValue"] {
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 1.8rem !important;
-}
-
-/* Fix for Multiselect Visibility */
-div[data-testid="stMultiSelect"] span {
-    color: #0F172A !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ===============================
-# PLOTLY THEME
-# ===============================
-def apply_plotly_style(fig):
-    fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Outfit", color="#94A3B8"),
-        margin=dict(t=40, b=0, l=0, r=0),
-        hovermode="x unified"
-    )
-    fig.update_xaxes(showgrid=False, color="#475569")
-    fig.update_yaxes(showgrid=True, gridcolor="rgba(255,255,255,0.05)", color="#475569")
-    return fig
-
-# ===============================
-# DATA LOADING
-# ===============================
+### Preprocessed data for making Dashboard
 @st.cache_data
 def load_data():
     df = pd.read_csv("adidas_cleaned.xls")
@@ -97,111 +14,260 @@ def load_data():
     df['month_name'] = pd.Categorical(df['month_name'], categories=month_order, ordered=True)
     return df
 
+
 df = load_data()
-
-# ===============================
-# SIDEBAR
-# ===============================
-st.sidebar.markdown("<h2 style='font-size: 1.2rem;'>ADIDAS SYSTEMS</h2>", unsafe_allow_html=True)
-
-try:
-    img = Image.open("logo.png")
-    st.sidebar.image(img, use_column_width=True)
-except:
-    st.sidebar.info("Upload logo.png to see brand assets.")
-
-side = st.sidebar.radio("Navigation", ["Data Overview", "Interactive Dashboard"])
-
-# ===============================
-# PAGE 1: OVERVIEW
-# ===============================
-if side == "Data Overview":
-    st.markdown('<p class="main-title">Sales Intelligence</p>', unsafe_allow_html=True)
-    st.markdown("### US Retail Operations 2020—2021")
-    
-    col_text, col_img = st.columns([2, 1])
-    with col_text:
-        st.write("""
-        This dataset provides a granular view of Adidas US sales performance. 
-        It tracks revenue across various retailers, geographic regions, and sales channels 
-        (In-store, Online, Outlet) to identify growth drivers and profitability trends.
-        """)
-        
-    with st.expander("Explore Schema Details"):
+st.sidebar.title("ADIDAS SALES DATA Analysis 2020 - 2021")
+img = Image.open("logo.png")
+st.sidebar.image(img)
+st.set_page_config(
+    page_title="Adidas US Sales Dashboard"
+)
+side = st.sidebar.radio("Go to",["Data Set Overview","DashBoard"])
+if side == "Data Set Overview":
+    st.title("WelCome To The ADIDAS US SALES DASHBOARD OF YEAR 2020-2021")
+    st.divider()
+    st.header("Data Set Overview")
+    st.text(
+        "About Dataset An Adidas sales dataset is a collection of data that includes information on the sales of Adidas products."
+        " This type of dataset may include details such as the number of units sold, the total sales revenue,"
+        " the location of the sales, the type of product sold, and any other relevant information. "
+        " Adidas sales data can be useful for a variety of purposes, such as analyzing sales trends, "
+        " identifying successful products or marketing campaigns, and developing strategies for future sales. "
+        " It can also be used to compare Adidas sales to those of competitors, or to analyze the effectiveness of different marketing or sales channels. "
+        " There are a variety of sources that could potentially provide an Adidas sales dataset, "
+        " including Adidas itself, market research firms, government agencies, or other organizations that track sales data. "
+        " The specific data points included in an Adidas sales dataset may vary depending on the source and the purpose for which it is being used")
+    st.header("Column Description")
+    with st.expander("Dataset Column Details"):
         st.markdown("""
-        | Column | Description |
-        | :--- | :--- |
-        | **Retailer** | Official partner name |
-        | **Total Sales** | Gross revenue (USD) |
-        | **Operating Margin** | Efficiency ratio (%) |
+        - **retailer**: Retailer selling Adidas products  
+        - **region**: Geographic region in the US  
+        - **state**: State where the sale happened  
+        - **city**: City of the sale  
+
+        - **product**: Product category  
+        - **sales_method**: Sales channel (In-store / Online / Outlet)  
+
+        - **price_per_unit**: Price per item  
+        - **units_sold**: Number of items sold  
+        - **total_sales**: Total revenue generated  
+        - **operating_profit**: Profit after operating costs  
+        - **operating_margin**: Profit percentage  
+
+        - **invoice_date**: Date of transaction  
+        - **year**: Year of sale  
+        - **month**: Month number  
+        - **month_name**: Month name
         """)
-    
-    st.markdown("#### Sample Audit")
-    st.dataframe(df.head(10), use_container_width=True)
+    st.header("Data set First Few Rows")
+    st.dataframe(df.head())
 
-# ===============================
-# PAGE 2: DASHBOARD
-# ===============================
-if side == "Interactive Dashboard":
-    st.markdown('<p class="main-title">Performance Hub</p>', unsafe_allow_html=True)
-    
-    # ─── SIDEBAR FILTERS ───
-    st.sidebar.markdown("---")
-    region = st.sidebar.multiselect("Region", options=df["region"].unique(), default=df["region"].unique())
-    product = st.sidebar.multiselect("Product Category", options=df["product"].unique(), default=df["product"].unique())
-    method = st.sidebar.multiselect("Channel", options=df["sales_method"].unique(), default=df["sales_method"].unique())
-    
-    filtered_df = df[
-        (df["region"].isin(region)) & 
-        (df["product"].isin(product)) & 
-        (df["sales_method"].isin(method))
-    ]
+if side == "DashBoard":
+    option = st.sidebar.radio("Go To ",["Univariate Analysis","Bivariate Analysis and Multivariate Analysis"])
+    if option == "Univariate Analysis":
+        st.header("Univariate Analysis")
 
-    # ─── TOP KPI ROW ───
-    k1, k2, k3, k4 = st.columns(4)
-    k1.metric("Gross Revenue", f"${filtered_df['total_sales'].sum()/1e6:.1f}M")
-    k2.metric("Units Moved", f"{filtered_df['units_sold'].sum():,.0f}")
-    k3.metric("Operating Profit", f"${filtered_df['operating_profit'].sum()/1e6:.1f}M")
-    k4.metric("Avg Margin", f"{filtered_df['operating_margin'].mean():.1f}%")
+        df["invoice_date"] = pd.to_datetime(df["invoice_date"])
 
-    st.markdown("---")
+        df_2020 = df[(df["invoice_date"] >= "2020-01-01") & (df["invoice_date"] <= "2020-12-31")]
+        df_2021 = df[(df["invoice_date"] >= "2021-01-01") & (df["invoice_date"] <= "2021-12-31")]
 
-    # ─── ANALYTICS TABS ───
-    tab_trend, tab_geo, tab_retail = st.tabs(["📈 Time Analysis", "🌍 Geo Analysis", "🏪 Channel Performance"])
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Sales", f"${df['total_sales'].sum():,.0f}")
+        col2.metric("Total Units Sold", f"{df['units_sold'].sum():,.0f}")
+        col3.metric("Total Operating Profit", f"${df['operating_profit'].sum():,.0f}")
 
-    with tab_trend:
-        st.markdown("#### Sales & Unit Volume Trends")
-        sales_line = filtered_df.groupby("invoice_date")["total_sales"].sum().reset_index()
-        fig_line = px.area(sales_line, x="invoice_date", y="total_sales", 
-                           color_discrete_sequence=["#38BDF8"])
-        st.plotly_chart(apply_plotly_style(fig_line), use_container_width=True)
+        col4, col5 = st.columns(2)
+        col4.metric("Avg Operating Margin (2020) in Percent", f"{df_2020['operating_margin'].mean():,.0f}")
+        col5.metric("Avg Operating Margin (2021) in Percent", f"{df_2021['operating_margin'].mean():,.0f}")
 
-    with tab_geo:
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("#### Top States (Revenue)")
-            state_sales = filtered_df.groupby("state")["total_sales"].sum().nlargest(5).reset_index()
-            fig_state = px.bar(state_sales, x="total_sales", y="state", orientation='h', 
-                               color_discrete_sequence=["#818CF8"])
-            st.plotly_chart(apply_plotly_style(fig_state), use_container_width=True)
-        with c2:
-            st.markdown("#### Regional Contribution")
-            fig_pie = px.pie(filtered_df, values="total_sales", names="region", hole=0.5,
-                             color_discrete_sequence=px.colors.sequential.Slate_r)
-            st.plotly_chart(apply_plotly_style(fig_pie), use_container_width=True)
+        col6, col7, col8 = st.columns(3)
+        col6.metric("Total Sales (2020)", f"${df_2020['total_sales'].sum():,.0f}")
+        col7.metric("Total Sales (2021)", f"${df_2021['total_sales'].sum():,.0f}")
+        col8.metric("Units Sold (2020)", f"{df_2020['units_sold'].sum():,.0f}")
 
-    with tab_retail:
-        st.markdown("#### Revenue vs. Efficiency (By Retailer)")
-        fig_scatter = px.scatter(
-            filtered_df, x="total_sales", y="operating_margin",
-            size="units_sold", color="product", hover_name="retailer",
-            color_discrete_sequence=px.colors.qualitative.Pastel
-        )
-        st.plotly_chart(apply_plotly_style(fig_scatter), use_container_width=True)
+        col9, col10, col11 = st.columns(3)
+        col9.metric("Units Sold (2021)", f"{df_2021['units_sold'].sum():,.0f}")
+        col10.metric("Operating Profit (2020)", f"${df_2020['operating_profit'].sum():,.0f}")
+        col11.metric("Operating Profit (2021)", f"${df_2021['operating_profit'].sum():,.0f}")
 
-# FOOTER
-st.markdown("""
-<div style="text-align: center; margin-top: 50px; color: #475569; font-size: 0.8rem;">
-    Adidas Analytics Engine | Proprietary Internal Tool | © 2026
-</div>
-""", unsafe_allow_html=True)
+        st.metric("Overall Avg Operating Margin in Percent", f"{df['operating_margin'].mean():,.0f}")
+        st.subheader("Above Insights are Fix in terms of Date if Want to see above stats in Different Periods Use DashBoard Below")
+
+        st.subheader("Dynamic Period Analysis")
+        start_date = st.date_input("Start Date", value=pd.to_datetime("2020-01-01"))
+        end_date = st.date_input("End Date", value=pd.to_datetime("2021-12-31"))
+
+        start_ts = pd.Timestamp(start_date)
+        end_ts = pd.Timestamp(end_date)
+
+        df_period = df[(df["invoice_date"] >= start_ts) & (df["invoice_date"] <= end_ts)]
+
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Sales", f"${df_period['total_sales'].sum():,.0f}")
+        col2.metric("Total Units Sold", f"{df_period['units_sold'].sum():,.0f}")
+        col3.metric("Total Operating Profit", f"${df_period['operating_profit'].sum():,.0f}")
+
+        col4, col5 = st.columns(2)
+        col4.metric("Average Operating Margin", f"{df_period['operating_margin'].mean():,.0f}")
+
+    if option == "Bivariate Analysis and Multivariate Analysis":
+
+        tab1, tab2 = st.tabs(["# Graphs", "# Univariate Analysis of filtered Data"])
+        with tab1:
+            st.header("Bivariate Analysis and Multivariate Analysis")
+            region = st.sidebar.multiselect(
+            "Select Region",
+            options=df["region"].unique(),
+            default=df["region"].unique()
+            )
+
+            retailer = st.sidebar.multiselect(
+            "Select Retailer",
+            options=df["retailer"].unique(),
+            default=df["retailer"].unique()
+            )
+
+            product = st.sidebar.multiselect(
+            "Select Product",
+            options=df["product"].unique(),
+            default=df["product"].unique()
+            )
+
+            sales_method = st.sidebar.multiselect(
+            "Select Sales Method",
+            options=df["sales_method"].unique(),
+            default=df["sales_method"].unique()
+            )
+
+            year = st.sidebar.multiselect(
+            "Select Year",
+            options=sorted(df["year"].unique()),
+            default=sorted(df["year"].unique())
+            )
+
+            state = st.sidebar.multiselect(
+            "Select state",
+            options=df["state"].unique(),
+            default=df["state"].unique()
+            )
+            city = st.sidebar.multiselect(
+            "Select city",
+            options=df["city"].unique(),
+            default=df["city"].unique()
+            )
+
+            filtered_df = df[
+            (df["region"].isin(region)) &
+            (df["retailer"].isin(retailer)) &
+            (df["product"].isin(product)) &
+            (df["sales_method"].isin(sales_method)) &
+            (df["year"].isin(year)) &
+            (df["state"].isin(state)) &
+            (df["city"].isin(city))
+            ]
+            st.subheader("Filtered Data")
+            st.dataframe(filtered_df)
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.subheader("Sales by Region")
+                region_sales = (
+                filtered_df
+                .groupby("region")["total_sales"]
+                .sum()
+                )
+                st.bar_chart(region_sales)
+
+            with col2:
+                st.subheader("Sales by Product")
+                product_sales = (
+                filtered_df
+                .groupby("product")["total_sales"]
+                .sum()
+                )
+                st.bar_chart(product_sales)
+            st.subheader("Sales by Sale Method")
+            region_sales = (
+                filtered_df
+                .groupby("sales_method")["total_sales"].sum()
+            )
+            st.bar_chart(region_sales)
+            st.subheader("Sales Trends Over Time")
+            sales_line = filtered_df.groupby("invoice_date")["total_sales"].sum().reset_index()
+            fig_line = px.line(sales_line, x="invoice_date", y="total_sales", template="plotly_white")
+            st.plotly_chart(fig_line, use_container_width=True)
+
+            st.subheader("Top 5 and Bottom 5 Regions by Total Sales")
+
+            region_sales = filtered_df.groupby("state")["total_sales"].sum().reset_index()
+            region_sales = region_sales.sort_values(by = "total_sales",ascending = False).head(5)
+            figqq = px.bar(
+            region_sales,
+            x= "state",
+            y="total_sales",
+            title="Top 5 States by Total Sales"
+            )
+            st.plotly_chart(figqq, use_container_width=True)
+
+            region_sales1 = filtered_df.groupby("state")["total_sales"].sum().reset_index()
+            region_sales1 = region_sales1.sort_values(by="total_sales", ascending=True).head(5)
+            figqq1 = px.bar(
+            region_sales1,
+            x="state",
+            y="total_sales",
+            title="Bottom 5 States by Total Sales"
+            )
+            st.plotly_chart(figqq1, use_container_width=True)
+
+            st.subheader("Total Sales by Month")
+            month_plot = filtered_df.groupby("month_name")["total_sales"].sum()
+            st.line_chart(month_plot)
+
+            st.subheader("Total Units Sold by Month")
+            units_sold_month_plot = filtered_df.groupby("month_name")["units_sold"].sum()
+            st.line_chart(units_sold_month_plot)
+
+            st.subheader("Total Sales by Retailer")
+            retailer_plot = filtered_df.groupby("retailer")["total_sales"].sum()
+            st.bar_chart(retailer_plot)
+
+            st.subheader("Operating Profit by Retailer")
+            operating_profit_plot = filtered_df.groupby("retailer")["operating_profit"].sum()
+            st.bar_chart(operating_profit_plot)
+
+            st.subheader("Operating Profit by Product")
+            product_profit_plot = filtered_df.groupby("product")["operating_profit"].sum()
+            st.bar_chart(product_profit_plot)
+            st.subheader("Total Sales vs Operating Margin")
+
+            fig_scatter = px.scatter(
+                filtered_df,
+                x="total_sales",
+                y="operating_margin",
+                color="region",
+                size="units_sold",
+                hover_data=["retailer", "product", "state"],
+                labels={
+                    "total_sales": "Total Sales ($)",
+                    "operating_margin": "Operating Margin (%)"
+                },
+                title="Relationship between Total Sales and Operating Margin",
+                template="plotly_white"
+            )
+
+            fig_scatter.update_layout(
+                height=500
+            )
+
+            st.plotly_chart(fig_scatter, use_container_width=True)
+
+        with tab2:
+            st.subheader("Key Performance Indicators of Filtered Data")
+            kpi1, kpi2, kpi3 = st.columns(3)
+            kpi1.metric("Total Sales", f"${filtered_df['total_sales'].sum():,.0f}")
+            kpi2.metric("Total Units Sold", f"{filtered_df['units_sold'].sum():,.0f}")
+            kpi3.metric("Avg Margin", f"{filtered_df['operating_margin'].mean():.1f}%")
+
+kindly beautify it and make it more professional
